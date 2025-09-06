@@ -31,7 +31,8 @@ const adminItems = [
   { title: "Dashboard", url: "/dashboard", icon: Home },
   { title: "Users", url: "/users", icon: Users },
   { title: "Products", url: "/products", icon: Package },
-  { title: "Collections", url: "/collections", icon: Truck },
+  { title: "Collection Orders", url: "/admin/collection-orders", icon: Truck },
+  { title: "Marketplace Orders", url: "/admin/marketplace-orders", icon: ShoppingCart },
   { title: "Marketplace", url: "/marketplace", icon: ShoppingCart },
 ];
 

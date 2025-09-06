@@ -14,6 +14,8 @@ import CollectionRequest from "./pages/CollectionRequest";
 import MyCollections from "./pages/MyCollections";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
+import CollectionOrders from "./pages/admin/CollectionOrders";
+import MarketplaceOrders from "./pages/admin/MarketplaceOrders";
 
 const queryClient = new QueryClient();
 
@@ -59,6 +61,8 @@ const App = () => (
             <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
             <Route path="/request" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
             <Route path="/my-collections" element={<ProtectedRoute><MyCollections /></ProtectedRoute>} />
+            <Route path="/admin/collection-orders" element={<ProtectedRoute><CollectionOrders /></ProtectedRoute>} />
+            <Route path="/admin/marketplace-orders" element={<ProtectedRoute><MarketplaceOrders /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/" element={<Navigate to="/dashboard" replace />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
