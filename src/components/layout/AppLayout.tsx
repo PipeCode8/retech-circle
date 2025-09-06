@@ -5,6 +5,7 @@ import { Bell, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { ThemeToggle } from "@/components/ui/theme-toggle";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -20,7 +21,7 @@ export function AppLayout({ children }: AppLayoutProps) {
         
         <div className="flex-1 flex flex-col">
           {/* Top Navigation Bar */}
-          <header className="h-16 border-b bg-white flex items-center justify-between px-6 shadow-sm">
+          <header className="h-16 border-b bg-background flex items-center justify-between px-6 shadow-sm">
             <div className="flex items-center gap-4">
               <SidebarTrigger className="hover:bg-muted" />
               <div className="relative">
@@ -40,6 +41,8 @@ export function AppLayout({ children }: AppLayoutProps) {
                   </Badge>
                 </div>
               )}
+              
+              <ThemeToggle />
               
               <Button variant="ghost" size="icon" className="relative">
                 <Bell className="w-5 h-5" />
