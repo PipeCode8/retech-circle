@@ -27,15 +27,15 @@ export default function Login() {
       const success = await login(email, password);
       if (success) {
         toast({
-          title: "Welcome to EcoCollect!",
-          description: "Successfully signed in to your account.",
+          title: "Bienvenido a EcoTech",
+          description: "Has iniciado sesión correctamente en tu cuenta.",
         });
         navigate("/dashboard");
       } else {
-        setError("Invalid credentials. Please try again.");
+        setError("Credenciales inválidas. Por favor, inténtalo de nuevo.");
       }
     } catch (err) {
-      setError("An error occurred. Please try again.");
+      setError("Ocurrió un error. Por favor, inténtalo de nuevo.");
     } finally {
       setIsLoading(false);
     }
@@ -43,21 +43,21 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center gradient-hero">
-      <div className="absolute inset-0 bg-black/20"></div>
+  <div className="absolute inset-0 bg-black/60"></div>
       
       <div className="relative z-10 w-full max-w-md mx-4">
         <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-white mb-4 shadow-eco">
-            <Recycle className="w-8 h-8 text-primary" />
+          <div className="flex items-center justify-center w-full">
+            <img src="/logo.png" alt="Logo" className="w-80 h-80 object-contain" />
           </div>
-          <h1 className="text-3xl font-bold text-white mb-2">EcoCollect</h1>
-          <p className="text-white/90">Smart Tech Waste Collection Platform</p>
+          <h1 className="text-3xl font-bold text-white mb-2">EcoTech</h1>
+          <p className="text-white/90">Plataforma de Recogida de Residuos Tecnológicos Inteligente</p>
         </div>
 
         <Card className="shadow-2xl border-0">
           <CardHeader className="text-center">
-            <CardTitle className="text-2xl">Welcome Back</CardTitle>
-            <CardDescription>Sign in to your EcoCollect account</CardDescription>
+            <CardTitle className="text-2xl">Bienvenido a EcoTech</CardTitle>
+            <CardDescription>Inicia sesión en tu cuenta de EcoTech</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -98,26 +98,15 @@ export default function Login() {
                 size="lg"
                 disabled={isLoading}
               >
-                {isLoading ? "Signing In..." : "Sign In"}
+                {isLoading ? "Iniciando sesión..." : "Iniciar sesión"}
               </Button>
             </form>
 
-            <div className="mt-6 pt-6 border-t">
-              <div className="text-sm text-muted-foreground space-y-2">
-                <p className="font-medium">Demo Credentials:</p>
-                <p>Admin: admin@ecocollect.com / password</p>
-                <p>Client: jane@example.com / password</p>
-              </div>
-            </div>
+
           </CardContent>
         </Card>
 
-        <div className="text-center mt-6">
-          <div className="flex items-center justify-center gap-2 text-white/80">
-            <Leaf className="w-4 h-4" />
-            <span className="text-sm">Powered by sustainable technology</span>
-          </div>
-        </div>
+        
       </div>
     </div>
   );
