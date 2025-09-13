@@ -40,7 +40,7 @@ export default function Login() {
       setIsLoading(false);
     }
   };
-
+ 
   return (
     <div className="min-h-screen flex items-center justify-center gradient-hero">
   <div className="absolute inset-0 bg-black/60"></div>
