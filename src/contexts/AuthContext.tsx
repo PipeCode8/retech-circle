@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import axios from 'axios';
 
 export type UserRole = 'admin' | 'client';
 
@@ -59,20 +60,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    setIsLoading(true);
-    
-    // Mock authentication
-    const foundUser = mockUsers.find(u => u.email === email);
-    if (foundUser && password === 'password') {
-      setUser(foundUser);
-      localStorage.setItem('ecocollect-user', JSON.stringify(foundUser));
+  setIsLoading(true);
+  try {
+    const res = await axios.post('http://localhost:3000/api/auth/login', { email, password });
+    if (res.data.token && res.data.user) {
+      setUser(res.data.user);
+      localStorage.setItem('ecocollect-user', JSON.stringify(res.data.user));
+      localStorage.setItem('token', res.data.token);
       setIsLoading(false);
       return true;
     }
-    
     setIsLoading(false);
     return false;
-  };
+  } catch (error) {
+    setIsLoading(false);
+    return false;
+  }
+};
 
   const logout = () => {
     setUser(null);
@@ -92,4 +96,19 @@ export function useAuth() {
     throw new Error('useAuth must be used within an AuthProvider');
   }
   return context;
+}
+
+export async function login(email: string, password: string) {
+  try {
+    const res = await axios.post('http://localhost:3000/api/auth/login', { email, password });
+    if (res.data.token && res.data.user) {
+      localStorage.setItem('token', res.data.token);
+      localStorage.setItem('user', JSON.stringify(res.data.user));
+      return true;
+    } else {
+      // Mostrar error de credenciales
+    }
+  } catch (error) {
+    return false;
+  }
 }

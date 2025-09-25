@@ -28,19 +28,19 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 const adminItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Users", url: "/users", icon: Users },
-  { title: "Products", url: "/products", icon: Package },
-  { title: "Collection Orders", url: "/admin/collection-orders", icon: Truck },
-  { title: "Marketplace Orders", url: "/admin/marketplace-orders", icon: ShoppingCart },
+  { title: "Inicio", url: "/dashboard", icon: Home },
+  { title: "Usuarios", url: "/users", icon: Users },
+  { title: "Productos", url: "/products", icon: Package },
+  { title: "Órdenes de Recolección", url: "/admin/collection-orders", icon: Truck },
+  { title: "Órdenes del Marketplace", url: "/admin/marketplace-orders", icon: ShoppingCart },
   { title: "Marketplace", url: "/marketplace", icon: ShoppingCart },
 ];
 
 const clientItems = [
-  { title: "Dashboard", url: "/dashboard", icon: Home },
-  { title: "Request Collection", url: "/request", icon: Recycle },
+  { title: "Inicio", url: "/dashboard", icon: Home },
+  { title: "Solicitar Recolección", url: "/request", icon: Recycle },
   { title: "Marketplace", url: "/marketplace", icon: ShoppingCart },
-  { title: "My Collections", url: "/my-collections", icon: Package },
+  { title: "Mis Colecciones", url: "/my-collections", icon: Package },
 ];
 
 export function AppSidebar() {

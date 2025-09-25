@@ -32,19 +32,19 @@ interface CollectionItem {
 }
 
 const deviceTypes = [
-  { value: "laptop", label: "Laptop", icon: Laptop, points: 150 },
-  { value: "desktop", label: "Desktop Computer", icon: Monitor, points: 200 },
-  { value: "smartphone", label: "Smartphone", icon: Smartphone, points: 80 },
-  { value: "tablet", label: "Tablet", icon: Package, points: 100 },
+  { value: "laptop", label: "Portátil", icon: Laptop, points: 150 },
+  { value: "desktop", label: "Computador de escritorio", icon: Monitor, points: 200 },
+  { value: "smartphone", label: "Teléfono inteligente", icon: Smartphone, points: 80 },
+  { value: "tablet", label: "Tableta", icon: Package, points: 100 },
   { value: "monitor", label: "Monitor", icon: Monitor, points: 120 },
-  { value: "accessories", label: "Accessories", icon: Package, points: 30 },
+  { value: "accessories", label: "Accesorios", icon: Package, points: 30 },
 ];
 
 const conditions = [
-  { value: "working", label: "Working", multiplier: 1.2 },
-  { value: "minor-issues", label: "Minor Issues", multiplier: 1.0 },
-  { value: "broken", label: "Not Working", multiplier: 0.8 },
-  { value: "parts-only", label: "Parts Only", multiplier: 0.6 },
+  { value: "working", label: "Funciona", multiplier: 1.2 },
+  { value: "minor-issues", label: "Con fallas menores", multiplier: 1.0 },
+  { value: "broken", label: "No funciona", multiplier: 0.8 },
+  { value: "parts-only", label: "Solo para partes", multiplier: 0.6 },
 ];
 
 export default function CollectionRequest() {
@@ -62,6 +62,7 @@ export default function CollectionRequest() {
   const [preferredDate, setPreferredDate] = useState("");
   const [preferredTime, setPreferredTime] = useState("");
   const [specialInstructions, setSpecialInstructions] = useState("");
+  const [solicitudesPendientes, setSolicitudesPendientes] = useState<any[]>([]);
 
   const addItem = () => {
     if (!currentItem.type) return;
@@ -114,16 +115,35 @@ export default function CollectionRequest() {
 
   const totalEstimatedPoints = items.reduce((sum, item) => sum + item.estimatedPoints, 0);
 
-  const handleSubmit = () => {
-    // Here you would normally submit to your backend
-    console.log("Collection request:", {
+  const userId = 1; // <-- Reemplaza esto por el userId real del usuario autenticado
+
+  const handleSubmit = async () => {
+    const solicitud = {
       items,
       address,
       preferredDate,
       preferredTime,
       specialInstructions,
-    });
-    setStep(4);
+      status: "pendiente",
+      userId // <-- Agrega aquí el userId
+    };
+    try {
+      const response = await fetch("http://localhost:3000/api/solicitudes", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(solicitud)
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        alert("Error al enviar la solicitud: " + errorText);
+        return;
+      }
+      const data = await response.json();
+      setSolicitudesPendientes([...solicitudesPendientes, data]);
+      setStep(4);
+    } catch (error: any) {
+      alert("Error al enviar la solicitud: " + (error.message || "Intenta de nuevo."));
+    }
   };
 
   if (step === 4) {
@@ -132,13 +152,13 @@ export default function CollectionRequest() {
         <Card className="text-center">
           <CardContent className="p-8">
             <CheckCircle2 className="w-16 h-16 text-success mx-auto mb-4" />
-            <h2 className="text-2xl font-bold mb-2">Collection Requested!</h2>
+            <h2 className="text-2xl font-bold mb-2">¡Recolección solicitada!</h2>
             <p className="text-muted-foreground mb-6">
-              Your tech waste collection has been scheduled. You'll receive a confirmation email shortly with tracking details.
+              Tu solicitud de recolección de residuos tecnológicos ha sido agendada. Pronto recibirás un correo de confirmación con los detalles de seguimiento.
             </p>
             <div className="bg-muted/50 rounded-lg p-4 mb-6">
-              <p className="font-medium">Estimated EcoPoints: {totalEstimatedPoints}</p>
-              <p className="text-sm text-muted-foreground">You'll earn these points after collection is completed</p>
+              <p className="font-medium">EcoPuntos estimados: {totalEstimatedPoints}</p>
+              <p className="text-sm text-muted-foreground">Recibirás estos puntos una vez se complete la recolección.</p>
             </div>
             <Button variant="eco" onClick={() => {
               setStep(1);
@@ -148,7 +168,7 @@ export default function CollectionRequest() {
               setPreferredTime("");
               setSpecialInstructions("");
             }}>
-              Request Another Collection
+              Solicitar otra recolección
             </Button>
           </CardContent>
         </Card>
@@ -160,20 +180,20 @@ export default function CollectionRequest() {
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">Request Collection</h1>
-          <p className="text-muted-foreground">Schedule a pickup for your tech waste</p>
+          <h1 className="text-3xl font-bold">Solicitar recolección</h1>
+          <p className="text-muted-foreground">Agenda la recogida de tus residuos tecnológicos</p>
         </div>
         <Badge variant="secondary" className="text-sm">
-          Step {step} of 3
+          Paso {step} de 3
         </Badge>
       </div>
 
-      {/* Progress Steps */}
+      {/* Pasos de progreso */}
       <div className="flex items-center justify-between mb-8">
         {[
-          { num: 1, label: "Add Items" },
-          { num: 2, label: "Collection Details" },
-          { num: 3, label: "Review & Submit" },
+          { num: 1, label: "Agregar dispositivos" },
+          { num: 2, label: "Detalles de recolección" },
+          { num: 3, label: "Revisar y enviar" },
         ].map((stepItem) => (
           <div key={stepItem.num} className="flex items-center">
             <div className={`
@@ -191,28 +211,28 @@ export default function CollectionRequest() {
         ))}
       </div>
 
-      {/* Step 1: Add Items */}
+      {/* Paso 1: Agregar dispositivos */}
       {step === 1 && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Add Your Items</CardTitle>
-              <CardDescription>Tell us what tech waste you'd like us to collect</CardDescription>
+              <CardTitle>Agrega tus dispositivos</CardTitle>
+              <CardDescription>Cuéntanos qué residuos tecnológicos deseas recolectar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="device-type">Device Type</Label>
+                  <Label htmlFor="device-type">Tipo de dispositivo</Label>
                   <Select value={currentItem.type} onValueChange={(value) => setCurrentItem({...currentItem, type: value})}>
                     <SelectTrigger>
-                      <SelectValue placeholder="Select device type" />
+                      <SelectValue placeholder="Selecciona el tipo de dispositivo" />
                     </SelectTrigger>
                     <SelectContent>
                       {deviceTypes.map((device) => (
                         <SelectItem key={device.value} value={device.value}>
                           <div className="flex items-center gap-2">
                             <device.icon className="w-4 h-4" />
-                            {device.label} (+{device.points} points)
+                            {device.label} (+{device.points} puntos)
                           </div>
                         </SelectItem>
                       ))}
@@ -221,7 +241,7 @@ export default function CollectionRequest() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="condition">Condition</Label>
+                  <Label htmlFor="condition">Condición</Label>
                   <Select value={currentItem.condition} onValueChange={(value) => setCurrentItem({...currentItem, condition: value})}>
                     <SelectTrigger>
                       <SelectValue />
@@ -229,7 +249,7 @@ export default function CollectionRequest() {
                     <SelectContent>
                       {conditions.map((condition) => (
                         <SelectItem key={condition.value} value={condition.value}>
-                          {condition.label} ({Math.round(condition.multiplier * 100)}% points)
+                          {condition.label} ({Math.round(condition.multiplier * 100)}% puntos)
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -237,18 +257,18 @@ export default function CollectionRequest() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="brand">Brand (Optional)</Label>
+                  <Label htmlFor="brand">Marca (opcional)</Label>
                   <Input 
-                    placeholder="e.g., Apple, Samsung, Dell"
+                    placeholder="Ejemplo: Apple, Samsung, Dell"
                     value={currentItem.brand}
                     onChange={(e) => setCurrentItem({...currentItem, brand: e.target.value})}
                   />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="model">Model (Optional)</Label>
+                  <Label htmlFor="model">Modelo (opcional)</Label>
                   <Input 
-                    placeholder="e.g., iPhone 12, MacBook Pro"
+                    placeholder="Ejemplo: iPhone 12, MacBook Pro"
                     value={currentItem.model}
                     onChange={(e) => setCurrentItem({...currentItem, model: e.target.value})}
                   />
@@ -257,7 +277,7 @@ export default function CollectionRequest() {
 
               <div className="flex items-center gap-4">
                 <div className="space-y-2">
-                  <Label>Quantity</Label>
+                  <Label>Cantidad</Label>
                   <div className="flex items-center gap-2">
                     <Button 
                       variant="outline" 
@@ -277,18 +297,18 @@ export default function CollectionRequest() {
                   </div>
                 </div>
                 <Button onClick={addItem} disabled={!currentItem.type} className="mt-7">
-                  Add Item
+                  Agregar dispositivo
                 </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Items List */}
+          {/* Lista de dispositivos */}
           {items.length > 0 && (
             <Card>
               <CardHeader>
-                <CardTitle>Your Items ({items.length})</CardTitle>
-                <CardDescription>Total estimated: {totalEstimatedPoints} EcoPoints</CardDescription>
+                <CardTitle>Tus dispositivos ({items.length})</CardTitle>
+                <CardDescription>Total estimado: {totalEstimatedPoints} EcoPuntos</CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
@@ -307,7 +327,7 @@ export default function CollectionRequest() {
                               {item.model && ` ${item.model}`}
                             </p>
                             <p className="text-sm text-muted-foreground">
-                              {conditions.find(c => c.value === item.condition)?.label} • +{item.estimatedPoints} points
+                              {conditions.find(c => c.value === item.condition)?.label} • +{item.estimatedPoints} puntos
                             </p>
                           </div>
                         </div>
@@ -351,26 +371,25 @@ export default function CollectionRequest() {
               disabled={items.length === 0}
               variant="eco"
             >
-              Continue to Collection Details
+              Continuar a detalles de recolección
             </Button>
           </div>
         </div>
       )}
 
-      {/* Step 2: Collection Details */}
+      {/* Paso 2: Detalles de recolección */}
       {step === 2 && (
         <Card>
           <CardHeader>
-            <CardTitle>Collection Details</CardTitle>
-            <CardDescription>When and where should we collect your items?</CardDescription>
+            <CardTitle>Detalles de recolección</CardTitle>
+            <CardDescription>¿Cuándo y dónde debemos recoger tus dispositivos?</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="address">Pickup Address</Label>
+              <Label htmlFor="address">Dirección de recogida</Label>
               <div className="relative">
-                <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
-                <Textarea 
-                  placeholder="Enter your full address including apartment/unit number"
+               <Textarea 
+                  placeholder="Ingresa tu dirección completa incluyendo apartamento o unidad"
                   value={address}
                   onChange={(e) => setAddress(e.target.value)}
                   className="pl-9"
@@ -380,7 +399,7 @@ export default function CollectionRequest() {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="date">Preferred Date</Label>
+                <Label htmlFor="date">Fecha preferida</Label>
                 <div className="relative">
                   <Calendar className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                   <Input 
@@ -393,25 +412,25 @@ export default function CollectionRequest() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="time">Preferred Time</Label>
+                <Label htmlFor="time">Horario preferido</Label>
                 <Select value={preferredTime} onValueChange={setPreferredTime}>
                   <SelectTrigger>
                     <Clock className="w-4 h-4" />
-                    <SelectValue placeholder="Select time slot" />
+                    <SelectValue placeholder="Selecciona el horario" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="morning">Morning (9 AM - 12 PM)</SelectItem>
-                    <SelectItem value="afternoon">Afternoon (12 PM - 5 PM)</SelectItem>
-                    <SelectItem value="evening">Evening (5 PM - 8 PM)</SelectItem>
+                    <SelectItem value="morning">Mañana (9 AM - 12 PM)</SelectItem>
+                    <SelectItem value="afternoon">Tarde (12 PM - 5 PM)</SelectItem>
+                    <SelectItem value="evening">Noche (5 PM - 8 PM)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="instructions">Special Instructions (Optional)</Label>
+              <Label htmlFor="instructions">Instrucciones especiales (opcional)</Label>
               <Textarea 
-                placeholder="Any special instructions for our collection team? (e.g., building access, parking notes)"
+                placeholder="¿Alguna instrucción especial para nuestro equipo? (ejemplo: acceso al edificio, notas de parqueo)"
                 value={specialInstructions}
                 onChange={(e) => setSpecialInstructions(e.target.value)}
               />
@@ -419,31 +438,31 @@ export default function CollectionRequest() {
 
             <div className="flex justify-between pt-4">
               <Button variant="outline" onClick={() => setStep(1)}>
-                Back to Items
+                Volver a dispositivos
               </Button>
               <Button 
                 onClick={() => setStep(3)}
                 disabled={!address || !preferredDate || !preferredTime}
                 variant="eco"
               >
-                Review Request
+                Revisar solicitud
               </Button>
             </div>
           </CardContent>
         </Card>
       )}
 
-      {/* Step 3: Review & Submit */}
+      {/* Paso 3: Revisar y enviar */}
       {step === 3 && (
         <div className="space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Review Your Request</CardTitle>
-              <CardDescription>Please review all details before submitting</CardDescription>
+              <CardTitle>Revisa tu solicitud</CardTitle>
+              <CardDescription>Por favor revisa todos los detalles antes de enviar</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div>
-                <h3 className="font-semibold mb-3">Items to Collect ({items.length})</h3>
+                <h3 className="font-semibold mb-3">Dispositivos a recolectar ({items.length})</h3>
                 <div className="space-y-2">
                   {items.map((item) => {
                     const deviceType = deviceTypes.find(d => d.value === item.type);
@@ -454,40 +473,90 @@ export default function CollectionRequest() {
                           {item.brand && ` - ${item.brand}`}
                           {item.model && ` ${item.model}`}
                         </span>
-                        <Badge variant="secondary">+{item.estimatedPoints} points</Badge>
+                        <Badge variant="secondary">+{item.estimatedPoints} puntos</Badge>
                       </div>
                     );
                   })}
                 </div>
                 <Separator className="my-4" />
                 <div className="flex justify-between font-semibold">
-                  <span>Total Estimated Points:</span>
+                  <span>Total de puntos estimados:</span>
                   <span className="text-primary">{totalEstimatedPoints}</span>
                 </div>
               </div>
 
               <div>
-                <h3 className="font-semibold mb-3">Collection Details</h3>
+                <h3 className="font-semibold mb-3">Detalles de recolección</h3>
                 <div className="space-y-2 text-sm">
-                  <p><strong>Address:</strong> {address}</p>
-                  <p><strong>Date:</strong> {preferredDate}</p>
-                  <p><strong>Time:</strong> {preferredTime}</p>
-                  {specialInstructions && <p><strong>Instructions:</strong> {specialInstructions}</p>}
+                  <p><strong>Dirección:</strong> {address}</p>
+                  <p><strong>Fecha:</strong> {preferredDate}</p>
+                  <p><strong>Horario:</strong> {preferredTime}</p>
+                  {specialInstructions && <p><strong>Instrucciones:</strong> {specialInstructions}</p>}
                 </div>
               </div>
 
               <div className="flex justify-between pt-4">
                 <Button variant="outline" onClick={() => setStep(2)}>
-                  Back to Details
+                  Volver a detalles
                 </Button>
                 <Button onClick={handleSubmit} variant="hero" size="lg">
-                  Submit Collection Request
+                  Enviar solicitud de recolección
                 </Button>
               </div>
             </CardContent>
           </Card>
+
+          {solicitudesPendientes.length > 0 && (
+            <Card className="mt-8">
+              <CardHeader>
+                <CardTitle>Mis solicitudes de recolección pendientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <ul>
+                  {solicitudesPendientes.map((sol, idx) => (
+                    <li key={idx} className="mb-2">
+                      <strong>Dirección:</strong> {sol.address} <br />
+                      <strong>Fecha:</strong> {sol.preferredDate} <br />
+                      <strong>Horario:</strong> {sol.preferredTime} <br />
+                      <strong>Estado:</strong> {sol.status}
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          )}
         </div>
       )}
+
+      {/* Módulo: Mis solicitudes de recolección */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Mis solicitudes de recolección</CardTitle>
+          <CardDescription>Consulta el estado de tus solicitudes recientes</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {solicitudesPendientes.length === 0 ? (
+            <p className="text-muted-foreground">No tienes solicitudes registradas aún.</p>
+          ) : (
+            <ul className="space-y-3">
+              {solicitudesPendientes.map((sol, idx) => (
+                <li key={idx} className="p-3 bg-muted/50 rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <p><strong>Dirección:</strong> {sol.address}</p>
+                      <p><strong>Fecha:</strong> {sol.preferredDate}</p>
+                      <p><strong>Horario:</strong> {sol.preferredTime}</p>
+                    </div>
+                    <Badge variant={sol.status === "pendiente" ? "secondary" : "default"}>
+                      {sol.status}
+                    </Badge>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </CardContent>
+      </Card>
     </div>
   );
 }

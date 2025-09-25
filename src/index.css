@@ -1,7 +1,7 @@
+@import "leaflet/dist/leaflet.css";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
-
 /* EcoCollect Design System - Tech Waste Collection Platform
 All colors MUST be HSL. Rubik font family with eco-friendly green palette.
 */
@@ -159,3 +159,6 @@ All colors MUST be HSL. Rubik font family with eco-friendly green palette.
     transition: var(--transition-bounce);
   }
 }
+
+/* index.css */
+
