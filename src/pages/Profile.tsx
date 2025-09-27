@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,24 @@ import {
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+function useAchievements(userId: number) {
+  const [achievements, setAchievements] = useState([]);
+  const [userAchievements, setUserAchievements] = useState([]);
+
+  useEffect(() => {
+    fetch("/api/achievements").then(res => res.json()).then(setAchievements);
+    fetch(`/api/users/${userId}/achievements`).then(res => res.json()).then(setUserAchievements);
+  }, [userId]);
+
+  // Marca los logros obtenidos
+  const achievementsWithStatus = achievements.map(a => ({
+    ...a,
+    earned: userAchievements.some(ua => ua.achievement_id === a.id)
+  }));
+
+  return achievementsWithStatus;
+}
+
 export default function Profile() {
   const { user } = useAuth();
   const { toast } = useToast();
@@ -36,11 +54,12 @@ export default function Profile() {
     address: user?.address || "",
   });
 
+  const achievements = useAchievements(user?.id);
+
   const handleSave = () => {
-    // Here you would normally save to your backend
     toast({
-      title: "Profile updated",
-      description: "Your profile information has been saved successfully.",
+      title: "Perfil actualizado",
+      description: "Tu información de perfil ha sido guardada exitosamente.",
     });
     setIsEditing(false);
   };
@@ -55,18 +74,11 @@ export default function Profile() {
     setIsEditing(false);
   };
 
-  const achievements = [
-    { name: "Eco Warrior", description: "Collected 10+ devices", icon: Award, earned: true },
-    { name: "Green Pioneer", description: "First collection completed", icon: Star, earned: true },
-    { name: "Sustainability Champion", description: "Saved 1 ton of CO₂", icon: Coins, earned: true },
-    { name: "Tech Recycler Pro", description: "25+ successful collections", icon: Package, earned: false },
-  ];
-
   const recentActivity = [
-    { date: "2025-01-06", action: "Collection requested", details: "3 devices", points: 180 },
-    { date: "2025-01-05", action: "Item purchased", details: "Refurbished laptop stand", points: -300 },
-    { date: "2025-01-03", action: "Collection completed", details: "MacBook Pro, iPhone", points: 250 },
-    { date: "2025-01-01", action: "Joined EcoCollect", details: "Welcome bonus", points: 100 },
+    { date: "2025-01-06", action: "Recolección solicitada", details: "3 dispositivos", points: 180 },
+    { date: "2025-01-05", action: "Artículo comprado", details: "Soporte para laptop reacondicionado", points: -300 },
+    { date: "2025-01-03", action: "Recolección completada", details: "MacBook Pro, iPhone", points: 250 },
+    { date: "2025-01-01", action: "Te uniste a EcoCollect", details: "Bono de bienvenida", points: 100 },
   ];
 
   if (!user) return null;
@@ -75,23 +87,23 @@ export default function Profile() {
     <div className="p-6 max-w-4xl mx-auto space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold">My Profile</h1>
-          <p className="text-muted-foreground">Manage your account and track your impact</p>
+          <h1 className="text-3xl font-bold">Mi Perfil</h1>
+          <p className="text-muted-foreground">Administra tu cuenta y sigue tu impacto</p>
         </div>
         {!isEditing ? (
           <Button variant="outline" onClick={() => setIsEditing(true)} className="gap-2">
             <Edit2 className="w-4 h-4" />
-            Edit Profile
+            Editar Perfil
           </Button>
         ) : (
           <div className="flex gap-2">
             <Button variant="outline" onClick={handleCancel} className="gap-2">
               <X className="w-4 h-4" />
-              Cancel
+              Cancelar
             </Button>
             <Button variant="eco" onClick={handleSave} className="gap-2">
               <Save className="w-4 h-4" />
-              Save Changes
+              Guardar Cambios
             </Button>
           </div>
         )}
@@ -102,8 +114,8 @@ export default function Profile() {
         <div className="lg:col-span-2 space-y-6">
           <Card>
             <CardHeader>
-              <CardTitle>Personal Information</CardTitle>
-              <CardDescription>Your account details and contact information</CardDescription>
+              <CardTitle>Información Personal</CardTitle>
+              <CardDescription>Detalles de tu cuenta y datos de contacto</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
               <div className="flex items-center gap-6">
@@ -128,14 +140,14 @@ export default function Profile() {
                     {user.role}
                   </Badge>
                   <p className="text-sm text-muted-foreground mt-1">
-                    Member since January 2025
+                    Miembro desde enero 2025
                   </p>
                 </div>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="name">Full Name</Label>
+                  <Label htmlFor="name">Nombre Completo</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -149,7 +161,7 @@ export default function Profile() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email Address</Label>
+                  <Label htmlFor="email">Correo Electrónico</Label>
                   <div className="relative">
                     <Mail className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -164,7 +176,7 @@ export default function Profile() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="phone">Phone Number</Label>
+                  <Label htmlFor="phone">Número de Teléfono</Label>
                   <div className="relative">
                     <Phone className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Input
@@ -173,13 +185,13 @@ export default function Profile() {
                       onChange={(e) => setFormData({...formData, phone: e.target.value})}
                       disabled={!isEditing}
                       className="pl-9"
-                      placeholder="Enter phone number"
+                      placeholder="Ingresa tu número"
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2 md:col-span-1">
-                  <Label htmlFor="address">Address</Label>
+                  <Label htmlFor="address">Dirección</Label>
                   <div className="relative">
                     <MapPin className="absolute left-3 top-3 w-4 h-4 text-muted-foreground" />
                     <Textarea
@@ -188,7 +200,7 @@ export default function Profile() {
                       onChange={(e) => setFormData({...formData, address: e.target.value})}
                       disabled={!isEditing}
                       className="pl-9 min-h-[80px]"
-                      placeholder="Enter your address"
+                      placeholder="Ingresa tu dirección"
                     />
                   </div>
                 </div>
@@ -199,8 +211,8 @@ export default function Profile() {
           {/* Recent Activity */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Activity</CardTitle>
-              <CardDescription>Your latest interactions with EcoCollect</CardDescription>
+              <CardTitle>Actividad Reciente</CardTitle>
+              <CardDescription>Tus últimas interacciones con EcoCollect</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
@@ -218,7 +230,7 @@ export default function Profile() {
                       variant={activity.points > 0 ? "default" : "secondary"}
                       className={activity.points > 0 ? "bg-success text-success-foreground" : ""}
                     >
-                      {activity.points > 0 ? "+" : ""}{activity.points} points
+                      {activity.points > 0 ? "+" : ""}{activity.points} puntos
                     </Badge>
                   </div>
                 ))}
@@ -232,36 +244,36 @@ export default function Profile() {
           {/* Stats Card */}
           <Card className="gradient-card border-0">
             <CardHeader>
-              <CardTitle>Your Impact</CardTitle>
-              <CardDescription>Making a difference for our planet</CardDescription>
+              <CardTitle className="text-neutral-800">Tu Impacto</CardTitle>
+              <CardDescription className="text-neutral-700">Marcando la diferencia por nuestro planeta</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Coins className="w-6 h-6 text-warning" />
-                  <span className="text-3xl font-bold text-primary">{user.points || 0}</span>
+                  <span className="text-3xl font-bold text-neutral-800">{user.points || 0}</span>
                 </div>
-                <p className="text-sm text-muted-foreground">EcoPoints Balance</p>
+                <p className="text-sm text-neutral-700">Saldo de EcoPuntos</p>
               </div>
 
               <Separator />
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm">Collections</span>
-                  <span className="font-medium">12</span>
+                  <span className="text-sm text-neutral-800">Recolecciones</span>
+                  <span className="font-medium text-neutral-800">12</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">CO₂ Saved</span>
-                  <span className="font-medium">2.4 tons</span>
+                  <span className="text-sm text-neutral-800">CO₂ Ahorrado</span>
+                  <span className="font-medium text-neutral-800">2.4 toneladas</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">Devices Recycled</span>
-                  <span className="font-medium">23</span>
+                  <span className="text-sm text-neutral-800">Dispositivos Reciclados</span>
+                  <span className="font-medium text-neutral-800">23</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm">Impact Score</span>
-                  <span className="font-medium text-success">Excellent</span>
+                  <span className="text-sm text-neutral-800">Puntaje de Impacto</span>
+                  <span className="font-medium text-success">Excelente</span>
                 </div>
               </div>
             </CardContent>
@@ -270,8 +282,8 @@ export default function Profile() {
           {/* Achievements */}
           <Card>
             <CardHeader>
-              <CardTitle>Achievements</CardTitle>
-              <CardDescription>Your eco-friendly milestones</CardDescription>
+              <CardTitle>Logros</CardTitle>
+              <CardDescription>Tus hitos ecológicos</CardDescription>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
@@ -299,7 +311,7 @@ export default function Profile() {
                     </div>
                     {achievement.earned && (
                       <Badge className="bg-success text-success-foreground">
-                        Earned
+                        Obtenido
                       </Badge>
                     )}
                   </div>

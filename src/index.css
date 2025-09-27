@@ -158,6 +158,33 @@ All colors MUST be HSL. Rubik font family with eco-friendly green palette.
   .transition-bounce {
     transition: var(--transition-bounce);
   }
+  
+  .scroll-elegante {
+    scrollbar-width: thin;
+    scrollbar-color: #60a5fa #18181b;
+  }
+
+  .scroll-elegante::-webkit-scrollbar {
+    width: 10px;
+    background: transparent;
+  }
+
+  .scroll-elegante::-webkit-scrollbar-thumb {
+    background: linear-gradient(135deg, #60a5fa 40%, #38bdf8 100%);
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(56,189,248,0.2);
+    transition: background 0.3s;
+  }
+
+  .scroll-elegante::-webkit-scrollbar-thumb:hover {
+    background: linear-gradient(135deg, #38bdf8 0%, #60a5fa 100%);
+  }
+
+  .scroll-elegante::-webkit-scrollbar-track {
+    background: rgba(24,24,27,0.6);
+    border-radius: 12px;
+    margin: 2px 0;
+  }
 }
 
 /* index.css */

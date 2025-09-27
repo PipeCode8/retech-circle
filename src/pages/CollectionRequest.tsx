@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import axios from "axios";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,6 +21,8 @@ import {
   Trash2,
   CheckCircle2
 } from "lucide-react";
+import { useUser } from "../context/UserContext";
+import { useNavigate } from "react-router-dom";
 
 interface CollectionItem {
   id: string;
@@ -48,6 +51,8 @@ const conditions = [
 ];
 
 export default function CollectionRequest() {
+  const user = useUser();
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [items, setItems] = useState<CollectionItem[]>([]);
   const [currentItem, setCurrentItem] = useState({
@@ -115,23 +120,33 @@ export default function CollectionRequest() {
 
   const totalEstimatedPoints = items.reduce((sum, item) => sum + item.estimatedPoints, 0);
 
-  const userId = 1; // <-- Reemplaza esto por el userId real del usuario autenticado
+  const userId = localStorage.getItem("userId"); // Esto obtiene el userId real del cliente
+
+  useEffect(() => {
+    fetch(`http://localhost:3000/api/solicitudes?userId=${user?.id}`)
+      .then(res => res.json())
+      .then(data => setSolicitudesPendientes(data))
+      .catch(error => console.error("Error al obtener solicitudes:", error));
+  }, [user]);
 
   const handleSubmit = async () => {
-    const solicitud = {
+    const body = {
+      userId: user.id, // NO user.userId
       items,
       address,
       preferredDate,
       preferredTime,
       specialInstructions,
-      status: "pendiente",
-      userId // <-- Agrega aquí el userId
+      status: "pendiente"
     };
+
+    console.log("user.id enviado:", user?.id);
+
     try {
       const response = await fetch("http://localhost:3000/api/solicitudes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(solicitud)
+        body: JSON.stringify(body)
       });
       if (!response.ok) {
         const errorText = await response.text();
@@ -546,10 +561,19 @@ export default function CollectionRequest() {
                       <p><strong>Dirección:</strong> {sol.address}</p>
                       <p><strong>Fecha:</strong> {sol.preferredDate}</p>
                       <p><strong>Horario:</strong> {sol.preferredTime}</p>
+                      {/* Mostrar items */}
+                      <div>
+                        <strong>Dispositivos:</strong>
+                        <ul>
+                          {sol.items.map((item: any, i: number) => (
+                            <li key={i}>
+                              {item.quantity}x {item.type} {item.brand && `- ${item.brand}`} {item.model && `- ${item.model}`}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
                     </div>
-                    <Badge variant={sol.status === "pendiente" ? "secondary" : "default"}>
-                      {sol.status}
-                    </Badge>
+                    <Badge variant="secondary">{sol.status}</Badge>
                   </div>
                 </li>
               ))}

@@ -19,6 +19,10 @@ import MarketplaceOrders from "./pages/admin/MarketplaceOrders";
 import Home from "./pages/Home";
 import ResetPassword from "./pages/ResetPassword";
 import Register from "./pages/Register";
+import AdminRegister from "./pages/admin/adminRegister";
+import ForgotPassword from "./pages/ForgotPassword";
+import { UserContext } from "./context/UserContext";
+
 
 const queryClient = new QueryClient();
 
@@ -50,34 +54,62 @@ function PublicRoute({ children }: { children: React.ReactNode }) {
   return user ? <Navigate to="/dashboard" replace /> : <>{children}</>;
 }
 
-const App = () => (
-  <QueryClientProvider client={queryClient}>
-    <ThemeProvider>
-      <TooltipProvider>
-        <Toaster />
-        <Sonner />
-        <AuthProvider>
+const App = () => {
+  return (
+    <AuthProvider>
+      <UserContextWrapper />
+    </AuthProvider>
+  );
+};
+
+// Nuevo componente para obtener el usuario y proveer el contexto
+function UserContextWrapper() {
+  const { user, isLoading } = useAuth();
+
+  if (isLoading) {
+    // Puedes mostrar un loader mientras carga el usuario
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  const content = (
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <TooltipProvider>
+          <Toaster />
+          <Sonner />
           <Router>
-          <Routes>
-            <Route path="/" element={<Home />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/register" element={<Register />} />
-            <Route path="/reset-password" element={<ResetPassword />} />
-            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-            <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-            <Route path="/request" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
-            <Route path="/my-collections" element={<ProtectedRoute><MyCollections /></ProtectedRoute>} />
-            <Route path="/admin/collection-orders" element={<ProtectedRoute><CollectionOrders /></ProtectedRoute>} />
-            <Route path="/admin/marketplace-orders" element={<ProtectedRoute><MarketplaceOrders /></ProtectedRoute>} />
-            <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-            <Route path="*" element={<NotFound />} />
-          </Routes>
+            <Routes>
+              <Route path="/" element={<Home />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
+              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+              <Route path="/request" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
+              <Route path="/my-collections" element={<ProtectedRoute><MyCollections /></ProtectedRoute>} />
+              <Route path="/admin/collection-orders" element={<ProtectedRoute><CollectionOrders /></ProtectedRoute>} />
+              <Route path="/admin/marketplace-orders" element={<ProtectedRoute><MarketplaceOrders /></ProtectedRoute>} />
+              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+              <Route path="/collectionrequest" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
+              <Route path="/admin/adminRegister" element={<AdminRegister />} />
+              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+              <Route path="*" element={<NotFound />} />
+            </Routes>
           </Router>
-        </AuthProvider>
-      </TooltipProvider>
-    </ThemeProvider>
-  </QueryClientProvider>
-);
+        </TooltipProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
+  );
+
+  // Solo provee el contexto si hay usuario
+  return user
+    ? <UserContext.Provider value={{ id: Number(user.id) }}>{content}</UserContext.Provider>
+    : content;
+}
 
 export default App;

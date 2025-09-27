@@ -147,12 +147,12 @@ export default function Login() {
         </form>
         <div className="flex flex-col items-center mt-6 w-full">
           {!isRegister && (
-            <a
-              href="/forgot-password"
+            <Link
+              to="/forgot-password"
               className="text-green-700 hover:underline font-medium text-sm mb-2"
             >
               ¿Olvidaste tu contraseña?
-            </a>
+            </Link>
           )}
           {isRegister && (
             <button

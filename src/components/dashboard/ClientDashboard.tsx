@@ -2,9 +2,23 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { useAuth } from "@/contexts/AuthContext";
 import { Recycle, Coins, Package, Star, TrendingUp, Calendar, Badge, Clock, MapPin } from "lucide-react";
+import { useUser } from "src/context/UserContext";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 export function ClientDashboard() {
   const { user } = useAuth();
+  const [solicitudes, setSolicitudes] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+    fetch(`http://localhost:3000/api/solicitudes?userId=${user.id}`)
+      .then(res => res.json())
+      .then(data => setSolicitudes(data))
+      .catch(error => console.error("Error al obtener solicitudes:", error));
+  }, [user]);
 
   // Datos iniciales en cero para usuarios nuevos
   const ecoPuntos = user?.points ?? 0;
@@ -20,7 +34,12 @@ export function ClientDashboard() {
           <h1 className="text-3xl font-bold">¡Bienvenido de nuevo, {user?.name?.split(' ')[0] || "usuario"}!</h1>
           <p className="text-muted-foreground">Consulta tus colecciones y descubre tecnología reacondicionada</p>
         </div>
-        <Button variant="hero" size="lg" className="gap-2">
+        <Button
+          variant="hero"
+          size="lg"
+          className="gap-2"
+          onClick={() => navigate("/collectionrequest")}
+        >
           <Recycle className="w-5 h-5" />
           Solicitar recolección
         </Button>
@@ -83,16 +102,52 @@ export function ClientDashboard() {
             <CardDescription>Consulta tus solicitudes de recolección de residuos tecnológicos</CardDescription>
           </CardHeader>
           <CardContent>
-            {colecciones.length === 0 ? (
-              <div className="text-center text-muted-foreground py-8">
-                No tienes colecciones registradas aún.<br />
-                ¡Solicita tu primera recolección para comenzar!
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {/* Aquí iría el listado de colecciones si existieran */}
-              </div>
-            )}
+            <div
+              style={{
+                maxHeight: "300px",
+                overflowY: "auto",
+                paddingRight: "8px"
+              }}
+              className="scroll-elegante"
+            >
+              {solicitudes.length === 0 ? (
+                <p>No tienes colecciones registradas aún.</p>
+              ) : (
+                <ul>
+                  {solicitudes.map((sol, idx) => (
+                    <li key={idx} className="p-3 bg-muted/50 rounded-lg mb-2">
+                      <div>
+                        <strong>Dirección:</strong> {sol.address}<br />
+                        <strong>Fecha:</strong> {sol.preferredDate}<br />
+                        <strong>Horario:</strong> {sol.preferredTime}<br />
+                        <strong>Estado:</strong>
+                        <span
+                          style={{
+                            background: sol.status === "pendiente" ? "#3b82f6" : "#22c55e",
+                            color: "#fff",
+                            borderRadius: "8px",
+                            padding: "2px 10px",
+                            marginLeft: "8px",
+                            fontWeight: "bold"
+                          }}
+                        >
+                          {sol.status}
+                        </span>
+                        <br />
+                        <strong>Dispositivos:</strong>
+                        <ul>
+                          {sol.items.map((item, i) => (
+                            <li key={i}>
+                              {item.quantity}x {item.type} {item.brand && `- ${item.brand}`} {item.model && `- ${item.model}`}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
           </CardContent>
         </Card>
 
@@ -131,7 +186,12 @@ export function ClientDashboard() {
                 Agenda la recolección de tus dispositivos tecnológicos antiguos y gana EcoPuntos ayudando al medio ambiente.
                 Cada dispositivo reciclado ahorra CO₂ y crea oportunidades para otros.
               </p>
-              <Button variant="glass" size="lg" className="gap-2">
+              <Button
+                variant="glass"
+                size="lg"
+                className="gap-2"
+                onClick={() => navigate("/collectionrequest")}
+              >
                 <Recycle className="w-5 h-5" />
                 Agendar recolección
               </Button>
