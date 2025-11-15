@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider, useAuth } from "@/contexts/AuthContext";
 import { ThemeProvider } from "@/contexts/ThemeContext";
+import { CartProvider } from "@/contexts/CartContext";
+import { EcoPointsProvider } from "@/contexts/EcoPointsContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
@@ -78,30 +80,34 @@ function UserContextWrapper() {
   const content = (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        <TooltipProvider>
-          <Toaster />
-          <Sonner />
-          <Router>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/forgot-password" element={<ForgotPassword />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
-              <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-              <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
-              <Route path="/request" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
-              <Route path="/my-collections" element={<ProtectedRoute><MyCollections /></ProtectedRoute>} />
-              <Route path="/admin/collection-orders" element={<ProtectedRoute><CollectionOrders /></ProtectedRoute>} />
-              <Route path="/admin/marketplace-orders" element={<ProtectedRoute><MarketplaceOrders /></ProtectedRoute>} />
-              <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-              <Route path="/collectionrequest" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
-              <Route path="/admin/adminRegister" element={<AdminRegister />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </Router>
-        </TooltipProvider>
+        <CartProvider>
+          <EcoPointsProvider>
+            <TooltipProvider>
+              <Toaster />
+              <Sonner />
+              <Router>
+                <Routes>
+                  <Route path="/" element={<Home />} />
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
+                  <Route path="/forgot-password" element={<ForgotPassword />} />
+                  <Route path="/reset-password" element={<ResetPassword />} />
+                  <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+                  <Route path="/marketplace" element={<ProtectedRoute><Marketplace /></ProtectedRoute>} />
+                  <Route path="/request" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
+                  <Route path="/my-collections" element={<ProtectedRoute><MyCollections /></ProtectedRoute>} />
+                  <Route path="/admin/collection-orders" element={<ProtectedRoute><CollectionOrders /></ProtectedRoute>} />
+                  <Route path="/admin/marketplace-orders" element={<ProtectedRoute><MarketplaceOrders /></ProtectedRoute>} />
+                  <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
+                  <Route path="/collectionrequest" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
+                  <Route path="/admin/adminRegister" element={<AdminRegister />} />
+                  {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Router>
+            </TooltipProvider>
+          </EcoPointsProvider>
+        </CartProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );

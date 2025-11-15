@@ -8,6 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEcoPoints } from "@/contexts/EcoPointsContext";
 import { 
   User, 
   Mail, 
@@ -21,30 +22,43 @@ import {
   Calendar,
   Edit2,
   Save,
-  X
+  X,
+  TrendingUp,
+  TrendingDown
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
-function useAchievements(userId: number) {
-  const [achievements, setAchievements] = useState([]);
-  const [userAchievements, setUserAchievements] = useState([]);
+function useAchievements(userId: string) {
+  const [achievements, setAchievements] = useState([
+    {
+      id: 1,
+      name: "Primer Paso Verde",
+      description: "Completa tu primera recolección",
+      icon: Star,
+      earned: true
+    },
+    {
+      id: 2,
+      name: "Eco Guerrero",
+      description: "Recicla 10 dispositivos",
+      icon: Award,
+      earned: false
+    },
+    {
+      id: 3,
+      name: "Guardián del Planeta",
+      description: "Ahorra 1 tonelada de CO₂",
+      icon: Package,
+      earned: true
+    }
+  ]);
 
-  useEffect(() => {
-    fetch("/api/achievements").then(res => res.json()).then(setAchievements);
-    fetch(`/api/users/${userId}/achievements`).then(res => res.json()).then(setUserAchievements);
-  }, [userId]);
-
-  // Marca los logros obtenidos
-  const achievementsWithStatus = achievements.map(a => ({
-    ...a,
-    earned: userAchievements.some(ua => ua.achievement_id === a.id)
-  }));
-
-  return achievementsWithStatus;
+  return achievements;
 }
 
 export default function Profile() {
   const { user } = useAuth();
+  const { state: ecoPointsState, getTransactionHistory, earnPoints } = useEcoPoints();
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -54,7 +68,7 @@ export default function Profile() {
     address: user?.address || "",
   });
 
-  const achievements = useAchievements(user?.id);
+  const achievements = useAchievements(user?.id || "");
 
   const handleSave = () => {
     toast({
@@ -80,6 +94,15 @@ export default function Profile() {
     { date: "2025-01-03", action: "Recolección completada", details: "MacBook Pro, iPhone", points: 250 },
     { date: "2025-01-01", action: "Te uniste a EcoCollect", details: "Bono de bienvenida", points: 100 },
   ];
+
+  // Función para simular ganar puntos por completar una solicitud
+  const simulateCollectionCompletion = () => {
+    const pointsToEarn = Math.floor(Math.random() * 200) + 100; // Entre 100 y 300 puntos
+    const devices = ['MacBook Pro', 'iPhone', 'Samsung Galaxy', 'Dell Laptop', 'iPad'];
+    const randomDevice = devices[Math.floor(Math.random() * devices.length)];
+    
+    earnPoints(pointsToEarn, `recolección completada - ${randomDevice}`, `COL_${Date.now()}`);
+  };
 
   if (!user) return null;
 
@@ -251,7 +274,7 @@ export default function Profile() {
               <div className="text-center">
                 <div className="flex items-center justify-center gap-2 mb-2">
                   <Coins className="w-6 h-6 text-warning" />
-                  <span className="text-3xl font-bold text-neutral-800">{user.points || 0}</span>
+                  <span className="text-3xl font-bold text-neutral-800">{ecoPointsState.balance}</span>
                 </div>
                 <p className="text-sm text-neutral-700">Saldo de EcoPuntos</p>
               </div>
@@ -260,16 +283,22 @@ export default function Profile() {
 
               <div className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-sm text-neutral-800">Recolecciones</span>
-                  <span className="font-medium text-neutral-800">12</span>
+                  <span className="text-sm text-neutral-800">Total Ganados</span>
+                  <span className="font-medium text-success flex items-center gap-1">
+                    <TrendingUp className="w-4 h-4" />
+                    {ecoPointsState.totalEarned}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-neutral-800">CO₂ Ahorrado</span>
-                  <span className="font-medium text-neutral-800">2.4 toneladas</span>
+                  <span className="text-sm text-neutral-800">Total Gastados</span>
+                  <span className="font-medium text-orange-600 flex items-center gap-1">
+                    <TrendingDown className="w-4 h-4" />
+                    {ecoPointsState.totalSpent}
+                  </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-sm text-neutral-800">Dispositivos Reciclados</span>
-                  <span className="font-medium text-neutral-800">23</span>
+                  <span className="text-sm text-neutral-800">Transacciones</span>
+                  <span className="font-medium text-neutral-800">{ecoPointsState.transactions.length}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-sm text-neutral-800">Puntaje de Impacto</span>
@@ -287,7 +316,7 @@ export default function Profile() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {achievements.map((achievement, index) => (
+                {achievements.length > 0 ? achievements.map((achievement, index) => (
                   <div 
                     key={index} 
                     className={`flex items-center gap-3 p-3 rounded-lg ${
@@ -315,7 +344,72 @@ export default function Profile() {
                       </Badge>
                     )}
                   </div>
+                )) : (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Award className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No hay logros disponibles</p>
+                    <p className="text-sm">Completa más actividades para desbloquear logros</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Historial de EcoPuntos */}
+          <Card>
+            <CardHeader>
+              <div className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle>Historial de EcoPuntos</CardTitle>
+                  <CardDescription>Últimas transacciones de puntos</CardDescription>
+                </div>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  onClick={simulateCollectionCompletion}
+                  className="gap-2"
+                >
+                  <Star className="w-4 h-4" />
+                  Simular Recolección
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {getTransactionHistory().slice(0, 5).map((transaction) => (
+                  <div key={transaction.id} className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2 rounded-full ${
+                        transaction.type === 'earned' ? 'bg-success/10' : 'bg-orange-100'
+                      }`}>
+                        {transaction.type === 'earned' ? (
+                          <TrendingUp className={`w-4 h-4 text-success`} />
+                        ) : (
+                          <TrendingDown className={`w-4 h-4 text-orange-600`} />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-medium text-sm">{transaction.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {new Date(transaction.date).toLocaleDateString('es-ES')}
+                        </p>
+                      </div>
+                    </div>
+                    <div className={`font-semibold ${
+                      transaction.type === 'earned' ? 'text-success' : 'text-orange-600'
+                    }`}>
+                      {transaction.type === 'earned' ? '+' : '-'}{transaction.amount}
+                    </div>
+                  </div>
                 ))}
+                
+                {getTransactionHistory().length === 0 && (
+                  <div className="text-center py-6 text-muted-foreground">
+                    <Coins className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                    <p>No hay transacciones aún</p>
+                    <p className="text-sm">Completa una solicitud de recolección para ganar puntos</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

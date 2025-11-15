@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
+import { useToast } from "@/hooks/use-toast";
 import "../styles/auth.css";
 
 const Register: React.FC = () => {
@@ -10,6 +11,7 @@ const Register: React.FC = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { toast } = useToast();
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -25,8 +27,16 @@ const Register: React.FC = () => {
 
       if (res.data && res.data.user) {
         // Muestra mensaje de éxito antes de redirigir
-        alert("Cuenta creada exitosamente. Ahora puedes iniciar sesión.");
-        navigate("/login");
+        toast({
+          title: "¡Cuenta creada exitosamente!",
+          description: "Ahora puedes iniciar sesión con tus credenciales.",
+          variant: "default",
+        });
+        
+        // Esperar un momento antes de navegar para que el usuario vea el toast
+        setTimeout(() => {
+          navigate("/login");
+        }, 1500);
       } else {
         setError("No se pudo crear la cuenta");
       }
