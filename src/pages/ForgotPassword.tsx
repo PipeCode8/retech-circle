@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { api } from "../lib/api";
 
 export default function ForgotPassword() {
   const [email, setEmail] = useState("");
@@ -10,18 +11,10 @@ export default function ForgotPassword() {
     setMessage("");
     setIsLoading(true);
     try {
-      const res = await fetch("http://localhost:3000/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-      if (res.ok) {
-        setMessage("Te hemos enviado un correo con instrucciones para restablecer tu contraseña.");
-      } else {
-        setMessage("No se pudo enviar el correo. Verifica el email ingresado.");
-      }
+      await api.post("/api/auth/forgot-password", { email });
+      setMessage("Te hemos enviado un correo con instrucciones para restablecer tu contraseña.");
     } catch {
-      setMessage("Error de conexión. Intenta de nuevo.");
+      setMessage("No se pudo enviar el correo. Verifica el email ingresado.");
     } finally {
       setIsLoading(false);
     }

@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import { api } from "../lib/api";
 
 export default function ResetPassword() {
   const [email, setEmail] = useState("");
@@ -12,10 +12,7 @@ export default function ResetPassword() {
     setMessage("");
     setIsLoading(true);
     try {
-      await axios.post("http://localhost:3000/api/auth/update-password", {
-        email,
-        newPassword,
-      });
+      await api.post("/api/auth/reset-password", { email, newPassword });
       setMessage("✅ Contraseña actualizada correctamente. Ahora puedes iniciar sesión.");
       setEmail("");
       setNewPassword("");

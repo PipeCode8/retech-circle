@@ -1,5 +1,5 @@
 import { useState } from "react";
-import axios from "axios";
+import { api } from "../lib/api";
 import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "@/components/ui/use-toast";
@@ -24,8 +24,7 @@ export default function Login() {
 
     try {
       if (isRegister) {
-        // Registro de usuario con valores reales
-        await axios.post("http://localhost:3000/api/auth/register", {
+        const res = await api.post("/api/auth/register", {
           name,
           email,
           password,
@@ -40,7 +39,10 @@ export default function Login() {
         setEmail("");
         setPassword("");
       } else {
-        // Login
+        const res = await api.post("/api/auth/login", {
+          email,
+          password,
+        });
         const success = await login(email, password);
         if (success) {
           navigate("/dashboard");
