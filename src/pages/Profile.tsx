@@ -363,15 +363,7 @@ export default function Profile() {
                   <CardTitle>Historial de EcoPuntos</CardTitle>
                   <CardDescription>Últimas transacciones de puntos</CardDescription>
                 </div>
-                <Button 
-                  variant="outline" 
-                  size="sm" 
-                  onClick={simulateCollectionCompletion}
-                  className="gap-2"
-                >
-                  <Star className="w-4 h-4" />
-                  Simular Recolección
-                </Button>
+           
               </div>
             </CardHeader>
             <CardContent>

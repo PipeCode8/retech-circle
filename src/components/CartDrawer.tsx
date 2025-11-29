@@ -1,4 +1,5 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
+import { useNavigate } from "react-router-dom";
 import {
   Sheet,
   SheetContent,
@@ -8,11 +9,10 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Separator } from "@/components/ui/separator";
-import { ShoppingCart, Plus, Minus, Trash2, Coins } from "lucide-react";
 import { useCart } from "@/contexts/CartContext";
 import { useToast } from "@/hooks/use-toast";
+import { Minus, Plus, Trash2, ShoppingCart } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface CartDrawerProps {
   children: React.ReactNode;
@@ -21,10 +21,29 @@ interface CartDrawerProps {
 export default function CartDrawer({ children }: CartDrawerProps) {
   const { state, updateQuantity, removeItem, clearCart } = useCart();
   const { toast } = useToast();
+  const navigate = useNavigate();
+  const [open, setOpen] = useState(false);
+
+  // Calcular totales
+  const totals = useMemo(() => {
+    const totalPrice = state.items.reduce(
+      (sum, item) => sum + (item.price || 0) * item.quantity,
+      0
+    );
+    const totalPoints = state.items.reduce(
+      (sum, item) => sum + (item.points || 0) * item.quantity,
+      0
+    );
+    return { totalPrice, totalPoints };
+  }, [state.items]);
 
   const handleQuantityChange = (id: string, newQuantity: number) => {
     if (newQuantity < 1) {
       removeItem(id);
+      toast({
+        title: "Producto eliminado",
+        description: "El producto ha sido eliminado del carrito",
+      });
     } else {
       updateQuantity(id, newQuantity);
     }
@@ -40,18 +59,17 @@ export default function CartDrawer({ children }: CartDrawerProps) {
       return;
     }
 
-    toast({
-      title: "Procesando compra",
-      description: "Redirigiendo al proceso de pago...",
-      variant: "default",
-    });
+    // Cerrar el drawer
+    setOpen(false);
 
-    // Aquí implementarías la lógica real del checkout
-    console.log("Procesando checkout con items:", state.items);
+    // Navegar a checkout después de un pequeño delay para que el drawer se cierre
+    setTimeout(() => {
+      navigate("/checkout");
+    }, 300);
   };
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger asChild>
         {children}
       </SheetTrigger>
@@ -60,173 +78,142 @@ export default function CartDrawer({ children }: CartDrawerProps) {
           <SheetTitle className="flex items-center gap-2">
             <ShoppingCart className="w-5 h-5" />
             Carrito de Compras
-            {state.itemCount > 0 && (
-              <Badge variant="secondary">{state.itemCount}</Badge>
+            {state.items.length > 0 && (
+              <span className="ml-auto bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                {state.items.length}
+              </span>
             )}
           </SheetTitle>
           <SheetDescription>
             {state.items.length === 0 
               ? "Tu carrito está vacío" 
-              : `${state.items.length} producto${state.items.length !== 1 ? 's' : ''} en tu carrito`
-            }
+              : `${state.items.length} ${state.items.length === 1 ? 'producto' : 'productos'} en tu carrito`}
           </SheetDescription>
         </SheetHeader>
 
-        <div className="flex flex-col h-full">
-          {/* Lista de productos */}
-          <div className="flex-1 overflow-y-auto py-4">
-            {state.items.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-64 text-center">
-                <ShoppingCart className="w-16 h-16 text-muted-foreground mb-4" />
-                <p className="text-lg font-medium text-muted-foreground mb-2">
-                  Tu carrito está vacío
-                </p>
-                <p className="text-sm text-muted-foreground">
-                  Explora nuestros productos y encuentra tecnología reacondicionada
-                </p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                {state.items.map((item) => (
-                  <div key={item.id} className="flex gap-3 p-3 border rounded-lg">
-                    <img
-                      src={item.image}
-                      alt={item.name}
-                      className="w-16 h-16 object-cover rounded-md flex-shrink-0"
-                    />
-                    
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium text-sm leading-tight line-clamp-2">
-                        {item.name}
-                      </h4>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {item.seller}
-                      </p>
-                      
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-1">
+        <div className="flex flex-col h-full py-6">
+          {state.items.length === 0 ? (
+            <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
+              <ShoppingCart className="w-16 h-16 text-muted-foreground mb-4" />
+              <p className="text-muted-foreground mb-2">No hay productos en tu carrito</p>
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setOpen(false);
+                  navigate("/marketplace");
+                }}
+                className="mt-4"
+              >
+                Ir al Marketplace
+              </Button>
+            </div>
+          ) : (
+            <>
+              <ScrollArea className="flex-1 -mx-6 px-6">
+                <div className="space-y-4">
+                  {state.items.map((item) => (
+                    <div
+                      key={item.id}
+                      className="flex gap-4 p-4 rounded-lg border bg-card"
+                    >
+                      <img
+                        src={item.image}
+                        alt={item.name}
+                        className="w-20 h-20 object-cover rounded-md"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-medium truncate">{item.name}</h4>
+                        <p className="text-sm text-muted-foreground">
+                          {item.seller}
+                        </p>
+                        <div className="flex items-center gap-2 mt-2">
                           {item.price > 0 ? (
-                            <span className="font-semibold text-primary">
-                              ${item.price}
-                            </span>
+                            <p className="font-bold text-primary">${item.price}</p>
                           ) : (
-                            <div className="flex items-center gap-1">
-                              <Coins className="w-4 h-4 text-warning" />
-                              <span className="font-semibold text-warning">
-                                {item.points}
-                              </span>
-                            </div>
+                            <p className="font-bold text-warning">{item.points} pts</p>
                           )}
                         </div>
-                        
+                      </div>
+                      <div className="flex flex-col items-end justify-between">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => removeItem(item.id)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                         <div className="flex items-center gap-2">
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon"
+                            className="h-8 w-8"
                             onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            className="w-8 h-8 p-0"
                           >
-                            <Minus className="w-3 h-3" />
+                            <Minus className="h-3 w-3" />
                           </Button>
-                          
-                          <span className="w-8 text-center text-sm font-medium">
+                          <span className="w-8 text-center font-medium">
                             {item.quantity}
                           </span>
-                          
                           <Button
                             variant="outline"
-                            size="sm"
+                            size="icon"
+                            className="h-8 w-8"
                             onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            className="w-8 h-8 p-0"
                           >
-                            <Plus className="w-3 h-3" />
-                          </Button>
-                          
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeItem(item.id)}
-                            className="w-8 h-8 p-0 text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="w-3 h-3" />
+                            <Plus className="h-3 w-3" />
                           </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+                  ))}
+                </div>
+              </ScrollArea>
 
-          {/* Resumen y botones */}
-          {state.items.length > 0 && (
-            <div className="border-t pt-4 space-y-4">
-              <div className="space-y-2">
-                {state.total > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total (USD):</span>
-                    <span className="text-lg font-bold text-primary">
-                      ${state.total.toFixed(2)}
-                    </span>
+              <div className="border-t pt-4 mt-4 space-y-4">
+                <div className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total (USD):</span>
+                    <span className="font-bold text-lg">${totals.totalPrice.toFixed(2)}</span>
                   </div>
-                )}
-                
-                {state.totalPoints > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Total (EcoPoints):</span>
-                    <div className="flex items-center gap-1">
-                      <Coins className="w-4 h-4 text-warning" />
-                      <span className="text-lg font-bold text-warning">
-                        {state.totalPoints}
-                      </span>
+                  {totals.totalPoints > 0 && (
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Total Puntos:</span>
+                      <span className="font-bold text-lg text-warning">{totals.totalPoints} pts</span>
                     </div>
-                  </div>
-                )}
-                
-                <div className="flex justify-between items-center text-xs text-muted-foreground">
-                  <span>{state.itemCount} artículo{state.itemCount !== 1 ? 's' : ''}</span>
-                  <span>Envío gratuito</span>
+                  )}
+                  <p className="text-xs text-muted-foreground">
+                    {state.items.length} {state.items.length === 1 ? 'artículo' : 'artículos'}
+                  </p>
+                  <p className="text-xs text-success">Envío gratuito</p>
+                </div>
+
+                <div className="space-y-2">
+                  <Button 
+                    onClick={handleCheckout}
+                    className="w-full"
+                    size="lg"
+                    variant="eco"
+                  >
+                    Proceder al Pago
+                  </Button>
+                  
+                  <Button
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => {
+                      clearCart();
+                      toast({
+                        title: "Carrito vaciado",
+                        description: "Todos los productos han sido eliminados",
+                      });
+                    }}
+                  >
+                    Vaciar Carrito
+                  </Button>
                 </div>
               </div>
-
-              <Separator />
-
-              <div className="space-y-2">
-                <Button 
-                  onClick={handleCheckout}
-                  className="w-full"
-                  size="lg"
-                >
-                  Proceder al Pago
-                </Button>
-                
-                <Button 
-                  variant="outline" 
-                  onClick={clearCart}
-                  className="w-full text-destructive hover:text-destructive"
-                  size="sm"
-                >
-                  Vaciar Carrito
-                </Button>
-              </div>
-
-              {/* Impacto ambiental */}
-              <div className="bg-green-50 border border-green-200 rounded-lg p-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-green-600">🌱</span>
-                  <span className="text-sm font-medium text-green-800">
-                    Impacto Ambiental
-                  </span>
-                </div>
-                <p className="text-xs text-green-700">
-                  Con esta compra evitarás la emisión de aproximadamente{' '}
-                  <span className="font-semibold">
-                    {(state.itemCount * 15).toFixed(0)} kg de CO₂
-                  </span>
-                </p>
-              </div>
-            </div>
+            </>
           )}
         </div>
       </SheetContent>

@@ -69,8 +69,8 @@ export function AppSidebar() {
             <Recycle className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-lg font-bold text-sidebar-foreground">EcoCollect</h2>
-            <p className="text-xs text-sidebar-foreground/70">Tech Waste Solution</p>
+            <h2 className="text-lg font-bold text-sidebar-foreground">EcoTech</h2>
+            <p className="text-xs text-sidebar-foreground/70">Ayudamos el medioambiente</p>
           </div>
         </div>
       </SidebarHeader>

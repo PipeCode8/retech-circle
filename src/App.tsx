@@ -101,9 +101,11 @@ function UserContextWrapper() {
                   <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
                   <Route path="/collectionrequest" element={<ProtectedRoute><CollectionRequest /></ProtectedRoute>} />
                   <Route path="/admin/adminRegister" element={<AdminRegister />} />
+                  
                   {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
                   <Route path="*" element={<NotFound />} />
                 </Routes>
+                
               </Router>
             </TooltipProvider>
           </EcoPointsProvider>
